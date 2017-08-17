@@ -61,11 +61,12 @@ public class MyContentProvider extends ContentProvider {
     private static String INGREDIENTS_TABLE_NAME = "ingredients";
     public static String INGREDIENTS_NAME = "ingredient_name";
     public static String INGREDIENT_ID = "ingredient_id";
-    public static String INGREDIENT_ID_WTTH_TABLE = INGREDIENTS_TABLE_NAME + "." + INGREDIENT_ID;
+    public static String INGREDIENT_ID_WITH_TABLE = INGREDIENTS_TABLE_NAME + "." + INGREDIENT_ID;
     // Basket Table
     private static String BASKET_TABLE_NAME = "baskets";
     public static String BASKET_NAME = "basket_name";
     public static String BASKET_ID = "basket_id";
+    public static String BASKET_ID_WITH_TABLE = BASKET_TABLE_NAME + "." + BASKET_ID;
     // Basket/Ingredient Table
     private static String BASKET_INGREDIENT_TABLE_NAME = "basket_ingredient";
     public static String INGREDIENT_AMOUNT = "ingredient_amount";
@@ -244,12 +245,14 @@ public class MyContentProvider extends ContentProvider {
                 ingredientID = uri.getLastPathSegment();
                 count = db.delete(INGREDIENTS_TABLE_NAME,INGREDIENT_ID + "=" + ingredientID
                         +(!TextUtils.isEmpty(selection)? " AND (" +selection + ")" : ""),selectionArgs);
+                getContext().getContentResolver().notifyChange(MyContentProvider.INGREDIENTS_URI,null);
                 break;
 
             case BASKET:
                 basketID = uri.getLastPathSegment();
                 count = db.delete(BASKET_TABLE_NAME,BASKET_ID + "=" + basketID
                         +(!TextUtils.isEmpty(selection)? " AND (" +selection + ")" : ""),selectionArgs);
+                getContext().getContentResolver().notifyChange(MyContentProvider.BASKETS_URI,null);
                 break;
             case INGREDIENT_BASKET:
                 basketID = uri.getPathSegments().get(1); // PROVIDER/basket/#/ingredient/#
@@ -257,6 +260,8 @@ public class MyContentProvider extends ContentProvider {
                 count = db.delete(BASKET_INGREDIENT_TABLE_NAME, BASKET_ID + "=" + basketID + " AND " +
                         INGREDIENT_ID + "=" + ingredientID + (!TextUtils.isEmpty(selection)? " AND (" +selection + ")" : ""),
                         selectionArgs);
+                getContext().getContentResolver().notifyChange(MyContentProvider.INGREDIENTS_URI,null);
+                getContext().getContentResolver().notifyChange(MyContentProvider.BASKETS_URI,null);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
@@ -276,10 +281,12 @@ public class MyContentProvider extends ContentProvider {
             case INGREDIENT:
                 id = uri.getLastPathSegment();
                 count = db.update(INGREDIENTS_TABLE_NAME,values,INGREDIENT_ID + "=" + id +(!TextUtils.isEmpty(selection)? " AND (" +selection + ")" : ""),selectionArgs);
+                getContext().getContentResolver().notifyChange(MyContentProvider.INGREDIENTS_URI,null);
                 break;
             case BASKET:
                 id = uri.getLastPathSegment();
                 count = db.update(BASKET_TABLE_NAME,values,BASKET_ID + "=" + id +(!TextUtils.isEmpty(selection)? " AND (" +selection + ")" : ""),selectionArgs);
+                getContext().getContentResolver().notifyChange(MyContentProvider.BASKETS_URI,null);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
@@ -326,7 +333,7 @@ public class MyContentProvider extends ContentProvider {
     }
     public Cursor GetAllIngredientsInBasket(long basketID) {
         return this.query(Uri.withAppendedPath(BASKETS_URI,Long.toString(basketID)+"/ingredient"),
-                new String[] {INGREDIENT_ID_WTTH_TABLE,INGREDIENTS_NAME,BASKET_ITEM_CHECKED,INGREDIENT_AMOUNT},
+                new String[] {INGREDIENT_ID_WITH_TABLE,INGREDIENTS_NAME,BASKET_ITEM_CHECKED,INGREDIENT_AMOUNT},
                 null,null,null);
     }
     public int RemoveIngredientFromBasket(long ingredientID, long basketID) {
