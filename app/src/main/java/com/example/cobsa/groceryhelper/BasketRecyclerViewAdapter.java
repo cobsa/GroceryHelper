@@ -1,7 +1,14 @@
 package com.example.cobsa.groceryhelper;
 
+import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -25,6 +32,7 @@ public class BasketRecyclerViewAdapter extends CursorRecyclerViewAdapter<BasketR
         private TextView mProgressStatus;
         private TextView mMenuTextView;
         private Long mBasketID;
+        private View mView;
 
         public BasketViewHolder(View v) {
             super(v);
@@ -32,6 +40,7 @@ public class BasketRecyclerViewAdapter extends CursorRecyclerViewAdapter<BasketR
             mProgressBar = (ProgressBar) v.findViewById(R.id.progressBar);
             mProgressStatus = (TextView) v.findViewById(R.id.basket_progress_textView);
             mMenuTextView = (TextView) v. findViewById(R.id.basket_item_menu_text_view);
+            mView = v;
         }
     }
 
@@ -44,7 +53,7 @@ public class BasketRecyclerViewAdapter extends CursorRecyclerViewAdapter<BasketR
         holder.mProgressBar.setProgress(1); // TODO
         holder.mProgressStatus.setText("1/10");
 
-        // Setup menu for each item
+        // Setup menu on click listener
 
         holder.mMenuTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,6 +77,27 @@ public class BasketRecyclerViewAdapter extends CursorRecyclerViewAdapter<BasketR
                     }
                 });
                 popupMenu.show();
+            }
+        });
+
+        // Setup click listener for item click
+
+        holder.mView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Change Fragment to Basket contents
+                Context mContext = v.getContext();
+                FragmentTransaction fragmentTransaction =
+                        ((AppCompatActivity)mContext).getSupportFragmentManager().beginTransaction();
+                Fragment newFragment = new BasketContentsFragment();
+                Bundle fragmentArgs = new Bundle();
+                fragmentArgs.putLong(BasketContentsFragment.BASKET_ID,holder.mBasketID);
+                newFragment.setArguments(fragmentArgs);
+
+                fragmentTransaction.replace(R.id.main_activity_fragment_container, newFragment);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+
             }
         });
 
