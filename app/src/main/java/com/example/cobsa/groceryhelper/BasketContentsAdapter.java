@@ -1,7 +1,9 @@
 package com.example.cobsa.groceryhelper;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +24,7 @@ public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketConte
         private TextView mIngredientName;
         private CheckBox mItemChecked;
         private Context mContext;
+        private long mIngredientID;
 
         public BasketContentsViewHolder(View v) {
             super(v);
@@ -45,11 +48,15 @@ public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketConte
     public void onBindViewHolder(final BasketContentsViewHolder holder, Cursor cursor) {
 
         holder.mIngredientName.setText(cursor.getString(cursor.getColumnIndex(MyContentProvider.INGREDIENTS_NAME)));
+        holder.mIngredientID = cursor.getLong(cursor.getColumnIndex(MyContentProvider.INGREDIENT_ID));
         holder.mItemChecked.setChecked((cursor.getInt(cursor.getColumnIndex(MyContentProvider.BASKET_ITEM_CHECKED))==1)?true:false);
         holder.mItemChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                //holder.mContext.getContentResolver().update();
+                ContentValues values = new ContentValues();
+                values.put(MyContentProvider.BASKET_ITEM_CHECKED, (holder.mItemChecked.isChecked()?1:0));
+                holder.mContext.getContentResolver().update(Uri.withAppendedPath(MyContentProvider.BASKETS_URI,
+                        Long.toString(mBasketID)+ "/ingredient/" + Long.toString(holder.mIngredientID)),values,null,null);
             }
         });
 

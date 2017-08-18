@@ -31,7 +31,7 @@ public class BasketRecyclerViewAdapter extends CursorRecyclerViewAdapter<BasketR
         private ProgressBar mProgressBar;
         private TextView mProgressStatus;
         private TextView mMenuTextView;
-        private Long mBasketID;
+        Long mBasketID;
         private View mView;
 
         public BasketViewHolder(View v) {
@@ -42,6 +42,9 @@ public class BasketRecyclerViewAdapter extends CursorRecyclerViewAdapter<BasketR
             mMenuTextView = (TextView) v. findViewById(R.id.basket_item_menu_text_view);
             mView = v;
         }
+        public void setBasketID(long basketID) {
+            this.mBasketID = basketID;
+        }
     }
 
     @Override
@@ -49,7 +52,7 @@ public class BasketRecyclerViewAdapter extends CursorRecyclerViewAdapter<BasketR
         // Set content on Binding View to data
         holder.mBasketName.setText(cursor.
                 getString(cursor.getColumnIndex(MyContentProvider.BASKET_NAME)));
-        holder.mBasketID = cursor.getLong(cursor.getColumnIndex(MyContentProvider.BASKET_ID));
+        holder.setBasketID( cursor.getLong(1)); // Can't get column id with name
         holder.mProgressStatus.setText(Long.toString(cursor.getLong(3)) +"/"
                 + Long.toString(cursor.getLong(2)));
         holder.mProgressBar.setMax(cursor.getInt(2));

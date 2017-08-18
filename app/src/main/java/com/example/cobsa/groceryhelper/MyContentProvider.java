@@ -168,10 +168,11 @@ public class MyContentProvider extends ContentProvider {
                         + " ON " + BASKET_TABLE_NAME + "." + BASKET_ID  + "=" +BASKET_INGREDIENT_TABLE_NAME+ "."+ BASKET_ID +" AND " + BASKET_TABLE_NAME + "." + BASKET_ID +
                         "=";
                 cursor = null;
-
+                // Get All available basket id from Baskets table
                 Cursor cursorOfBasketIds = db.query(BASKET_TABLE_NAME,new String[]{BASKET_ID},selection,null,null,null,sortOrder);
                 if(cursorOfBasketIds != null) {
                     if(cursorOfBasketIds.getCount() == 0) {
+                        // If no baskets are created just return empty cursor
                         cursor =  cursorOfBasketIds;
                         cursor.setNotificationUri(getContext().getContentResolver(),BASKETS_URI);
                         break;
@@ -199,6 +200,7 @@ public class MyContentProvider extends ContentProvider {
                 so query contains INGREDIENT_NAME etc fields.
                 */
                 cursor = db.query(BASKET_INGEDIENT_TABLE_QUERY,projection,BASKET_ID + "=" + id,selectionArgs,null,null,sortOrder);
+                cursor.setNotificationUri(getContext().getContentResolver(),Uri.withAppendedPath(BASKETS_URI,id + "/ingredient"));
                 break;
             default:
                 return null;
@@ -329,6 +331,8 @@ public class MyContentProvider extends ContentProvider {
                         + " AND " + INGREDIENT_ID + "=" + ingreedientID,null);
                 getContext().getContentResolver().notifyChange(Uri.withAppendedPath(MyContentProvider.BASKETS_URI,
                         BASKET_ID + "/ingredient"),null);
+                getContext().getContentResolver().notifyChange(
+                        Uri.withAppendedPath(MyContentProvider.BASKETS_URI,basketID + "/ingredient"),null);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);

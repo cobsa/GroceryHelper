@@ -65,17 +65,10 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
         PROJECTION = new String[] {MyContentProvider.BASKET_NAME,
                 MyContentProvider.BASKET_ID_WITH_TABLE,
                 "count("+ MyContentProvider.INGREDIENT_ID + ")",
-                "sum(" +MyContentProvider.BASKET_ITEM_CHECKED+")"};
+                "sum(" + MyContentProvider.BASKET_ITEM_CHECKED + ")"};
 
         getLoaderManager().initLoader(0,new Bundle(), this);
         return view;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Refresh list when coming back to activity/fragment
-        getLoaderManager().restartLoader(0, new Bundle(), this);
     }
 
     // Cursor loader functions
@@ -95,11 +88,6 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
     public void onLoaderReset(Loader<Cursor> loader) {
         mAdapter.swapCursor(null);
 
-    }
-
-
-    public void restartLoader() {
-        getLoaderManager().restartLoader(0, new Bundle(),this);
     }
 
 }
