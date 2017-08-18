@@ -16,7 +16,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-
         app:layout_anchor="@id/recycler_view_show_basket"
         app:layout_anchorGravity="bottom|right|end" />
 

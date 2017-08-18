@@ -34,17 +34,7 @@ public class AddItemDialog extends DialogFragment {
 
         tagId = getArguments().getInt(SHOW_TAG);
 
-        // Get title from outside fragment
-        switch (tagId) {
-            case BASKET:
-                mTitle = getString(R.string.add_basket);
-                break;
-            case INGREDIENT:
-                mTitle = getString(R.string.add_ingredient);
-                break;
-            default:
-                mTitle = "PlaceHolder";
-        }
+
 
 
         AlertDialog.Builder builder  = new AlertDialog.Builder(getActivity());
@@ -55,7 +45,21 @@ public class AddItemDialog extends DialogFragment {
         // Get editText and change title
         mEditText = (EditText) inflatedView.findViewById(R.id.add_item_name);
         mTextView = (TextView) inflatedView.findViewById(R.id.add_item_title);
-        mEditText.setHint(R.string.search_hint_basket_name);
+
+        // Get title from outside fragment
+        switch (tagId) {
+            case BASKET:
+                mTitle = getString(R.string.add_basket);
+                mEditText.setHint(getString(R.string.search_hint_basket_name));
+                break;
+            case INGREDIENT:
+                mTitle = getString(R.string.add_ingredient);
+                mEditText.setHint(getString(R.string.search_hint_ingredient_name));
+                break;
+            default:
+                mTitle = "PlaceHolder";
+        }
+
         mTextView.setText(mTitle);
         // Add action buttons
         builder.setView(inflatedView)
@@ -65,19 +69,19 @@ public class AddItemDialog extends DialogFragment {
                         // Add item to database
                         String itemName = mEditText.getText().toString();
                         ContentValues values = new ContentValues();
-                        values.put(MyContentProvider.BASKET_NAME,itemName);
                         // Correct function to call
                         switch (tagId) {
                             case BASKET:
+                                values.put(MyContentProvider.BASKET_NAME,itemName);
                                 getContext().getContentResolver().insert(MyContentProvider.BASKETS_URI,values);
                                 break;
                             case INGREDIENT:
-
+                                values.put(MyContentProvider.INGREDIENTS_NAME,itemName);
+                                getContext().getContentResolver().insert(MyContentProvider.INGREDIENTS_URI,values);
                                 break;
                             default:
                                 throw new IllegalArgumentException("Item type basket/ingredient etc is not specified. TagId: " + tagId);
                         }
-                        notifyToTarget();
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -87,16 +91,6 @@ public class AddItemDialog extends DialogFragment {
                     }
                 });
         return builder.create();
-    }
-
-    public void notifyToTarget() {
-        BasketListingFragment fragment = (BasketListingFragment) getTargetFragment();
-
-        String asda = "1";
-        if(fragment != null) {
-            fragment.restartLoader();
-        }
-
     }
 
 }

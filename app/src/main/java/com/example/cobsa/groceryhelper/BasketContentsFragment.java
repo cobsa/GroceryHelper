@@ -5,10 +5,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -44,6 +48,29 @@ public class BasketContentsFragment extends Fragment implements LoaderManager.Lo
 
         View view = inflater.inflate(R.layout.fragment_basket_contents,container,false);
         mContext = view.getContext();
+
+
+        //Set floating Action button
+
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.add_ingredient);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentTransaction transaction =
+                        ((AppCompatActivity)mContext).getSupportFragmentManager().beginTransaction();
+
+                // Add new fragment and set arguments
+
+                Fragment newFragment = new AddIngredientFragment();
+                Bundle fragmentArgs = new Bundle();
+                fragmentArgs.putLong(AddIngredientFragment.BASKET_ID,mBasketID);
+                newFragment.setArguments(fragmentArgs);
+                transaction.replace(R.id.main_activity_fragment_container, newFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+
+            }
+        });
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_basket_contents_recycler_view);
         mLayoutManager = new LinearLayoutManager(mContext);

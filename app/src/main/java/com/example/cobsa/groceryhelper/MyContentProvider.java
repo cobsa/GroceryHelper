@@ -5,6 +5,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -151,6 +152,7 @@ public class MyContentProvider extends ContentProvider {
                 break;
             case INGREDIENTS:
                 cursor = db.query(INGREDIENTS_TABLE_NAME,projection,selection,selectionArgs,null,null,sortOrder);
+                cursor.setNotificationUri(getContext().getContentResolver(),INGREDIENTS_URI);
                 break;
 
             case BASKET:
@@ -161,6 +163,7 @@ public class MyContentProvider extends ContentProvider {
                 break;
             case BASKETS:
                 cursor = db.query(BASKET_TABLE_NAME,projection,selection,selectionArgs,null,null,sortOrder);
+                cursor.setNotificationUri(getContext().getContentResolver(),BASKETS_URI);
                 break;
             case INGREDIENTS_BASKET:
                 List<String> pathSegments = uri.getPathSegments();
@@ -200,6 +203,7 @@ public class MyContentProvider extends ContentProvider {
                     // Add reference to content provider
                     _uri = ContentUris.withAppendedId(INGREDIENTS_URI,rowID);
                     getContext().getContentResolver().notifyChange(_uri,null);
+                    getContext().getContentResolver().notifyChange(MyContentProvider.INGREDIENTS_URI,null);
                     break;
                 }
                 throw new SQLException("Failed to add Ingredient. URI: " + uri + " Values: " + (values != null? values.toString():""));
@@ -208,6 +212,7 @@ public class MyContentProvider extends ContentProvider {
                 if (rowID > 0) {
                     _uri = ContentUris.withAppendedId(BASKETS_URI,rowID);
                     getContext().getContentResolver().notifyChange(_uri,null);
+                    getContext().getContentResolver().notifyChange(BASKETS_URI,null);
                     break;
                 }
             case INGREDIENTS_BASKET:

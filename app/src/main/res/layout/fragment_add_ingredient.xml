@@ -4,18 +4,19 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/fragment_basket_contents_recycler_view"
+        android:id="@+id/add_item_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/add_ingredient"
+        android:id="@+id/add_ingredient_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:layout_anchor="@id/fragment_basket_contents_recycler_view"
+        app:layout_anchor="@id/add_item_recycler_view"
         app:layout_anchorGravity="bottom|right|end" />
 
 </android.support.design.widget.CoordinatorLayout>
