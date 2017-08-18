@@ -21,17 +21,18 @@ public class AddItemAdapter extends CursorRecyclerViewAdapter<AddItemAdapter.Add
 
         private TextView mItemName;
         private TextView mInBasket;
-        private Long mItemID;
+        private long mItemID;
         private View mView;
 
         public AddItemViewHolder(View v) {
             super(v);
             mItemName = (TextView) v.findViewById(R.id.row_add_item_item_name);
+            mInBasket = (TextView) v.findViewById(R.id.row_add_item_in_basket);
             mView = v;
         }
     }
 
-    private long mBasketID = -1;
+    private Long mBasketID;
 
     public AddItemAdapter(long basketID) {
         mBasketID = basketID;
@@ -39,10 +40,14 @@ public class AddItemAdapter extends CursorRecyclerViewAdapter<AddItemAdapter.Add
 
     @Override
     public void onBindViewHolder(final AddItemViewHolder holder, Cursor cursor) {
-
+        int visible = View.INVISIBLE;
         holder.mItemName.setText(cursor.getString(
                 cursor.getColumnIndex(MyContentProvider.INGREDIENTS_NAME)));
         holder.mItemID = cursor.getLong(cursor.getColumnIndex(MyContentProvider.INGREDIENT_ID));
+        if(mBasketID.compareTo(cursor.getLong(2))==0) {
+            visible = View.VISIBLE;
+        }
+        holder.mInBasket.setVisibility(visible);
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

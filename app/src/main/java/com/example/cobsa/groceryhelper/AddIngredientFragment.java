@@ -75,7 +75,7 @@ public class AddIngredientFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String[] PROJECTION = new String[] {MyContentProvider.INGREDIENTS_NAME,MyContentProvider.INGREDIENT_ID_WITH_TABLE};
+        String[] PROJECTION = new String[] {MyContentProvider.INGREDIENTS_NAME,MyContentProvider.INGREDIENT_ID_WITH_TABLE,MyContentProvider.BASKET_ID};
 
         return new CursorLoader(mContext, Uri.withAppendedPath(MyContentProvider.INGREDIENTS_URI,"/basket/" + mBasketID),PROJECTION,null,null,null);
     }

@@ -210,7 +210,8 @@ public class MyContentProvider extends ContentProvider {
                 id = uri.getLastPathSegment();
                 String JOIN_QUERY = INGREDIENTS_TABLE_NAME + " LEFT JOIN " + BASKET_INGREDIENT_TABLE_NAME + " ON " + INGREDIENT_ID_WITH_TABLE + "=" + BASKET_INGREDIENT_TABLE_NAME + "." + INGREDIENT_ID + " AND " + BASKET_ID + "=" + BASKET_ID;
                 cursor = db.query(JOIN_QUERY,projection,selection,selectionArgs,INGREDIENT_ID_WITH_TABLE,null,sortOrder);
-                cursor.setNotificationUri(getContext().getContentResolver(),Uri.withAppendedPath(INGREDIENTS_URI,"/basket/" + id));
+                cursor.setNotificationUri(getContext().getContentResolver(),Uri.withAppendedPath(INGREDIENTS_URI,"basket/" + id));
+                cursor.setNotificationUri(getContext().getContentResolver(),INGREDIENTS_URI);
                 break;
             default:
                 return null;
@@ -265,6 +266,7 @@ public class MyContentProvider extends ContentProvider {
                 if (rowID > 0 ) {
                     _uri = ContentUris.withAppendedId(Uri.withAppendedPath(BASKETS_URI, BasketID + "/ingredient/"),rowID);
                     getContext().getContentResolver().notifyChange(_uri, null);
+                    getContext().getContentResolver().notifyChange(INGREDIENTS_URI,null);
 
                 }
                 break;
