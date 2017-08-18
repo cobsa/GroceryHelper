@@ -212,6 +212,40 @@ public class MyContentProviderTest {
                 throw new AssertionError("Count's don't match. Expected: " + mIngredientNames.length + " Got: " + cursor.getCount());
             }
         }
+        // Update info on basket contents
+
+        for(String basketID: basketIDs)
+        {
+            for (String ingredientID: ingredientsIDs)
+            {
+                ContentValues values = new ContentValues();
+                values.put(MyContentProvider.BASKET_ITEM_CHECKED,1);
+                values.put(MyContentProvider.INGREDIENT_AMOUNT,5);
+                cp.update(Uri.withAppendedPath(MyContentProvider.BASKETS_URI,
+                        Long.parseLong(ingredientID) + "/ingredient/" + Long.parseLong(basketID)),values,null,null);
+
+            }
+        }
+
+        // Check all values are updated
+        for(String basketID: basketIDs)
+        {
+            Cursor cursor = cp.query(Uri.withAppendedPath(MyContentProvider.BASKETS_URI,basketID + "/ingredient"),new String[]{
+                    MyContentProvider.BASKET_ID,
+                    MyContentProvider.INGREDIENT_ID_WITH_TABLE },
+                    MyContentProvider.BASKET_ITEM_CHECKED + "=" + "1",null,null
+            );
+
+            if(cursor != null) {
+                if(cursor.getCount() != mIngredientNames.length) {
+                    throw new AssertionError("Not all rows where updated. Expected: " +
+                            mIngredientNames.length + " Got: " + cursor.getCount());
+                }
+            } else {
+                throw new AssertionError("Cursor is null");
+            }
+
+        }
         //Remove ingredients from baskets
         int count;
         for(String basketId: basketIDs) {

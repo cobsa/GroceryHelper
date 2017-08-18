@@ -16,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -162,8 +163,34 @@ public class MyContentProvider extends ContentProvider {
                         selectionArgs,null,null,sortOrder);
                 break;
             case BASKETS:
-                cursor = db.query(BASKET_TABLE_NAME,projection,selection,selectionArgs,null,null,sortOrder);
-                cursor.setNotificationUri(getContext().getContentResolver(),BASKETS_URI);
+
+                String JOIN_QUERY_BASKET_INGREDIENT = BASKET_TABLE_NAME  + " LEFT JOIN " + BASKET_INGREDIENT_TABLE_NAME
+                        + " ON " + BASKET_TABLE_NAME + "." + BASKET_ID  + "=" +BASKET_INGREDIENT_TABLE_NAME+ "."+ BASKET_ID +" AND " + BASKET_TABLE_NAME + "." + BASKET_ID +
+                        "=";
+                cursor = null;
+
+                Cursor cursorOfBasketIds = db.query(BASKET_TABLE_NAME,new String[]{BASKET_ID},selection,null,null,null,sortOrder);
+                if(cursorOfBasketIds != null) {
+                    if(cursorOfBasketIds.getCount() == 0) {
+                        cursor =  cursorOfBasketIds;
+                        cursor.setNotificationUri(getContext().getContentResolver(),BASKETS_URI);
+                        break;
+                    }
+                    cursorOfBasketIds.moveToNext(); // Get to first location
+                    String listOfProjections = TextUtils.join(",", projection);
+                    String PROJECTION_QUERY = "SELECT " + listOfProjections + " FROM ";
+                    String WHERE_QUERY = " WHERE " + BASKET_TABLE_NAME +"." + BASKET_ID + "=";
+
+                    ArrayList<String> SUBQUERIES = new ArrayList<>();
+                    SUBQUERIES.add( PROJECTION_QUERY + JOIN_QUERY_BASKET_INGREDIENT + cursorOfBasketIds.getLong(0) + WHERE_QUERY + cursorOfBasketIds.getLong(0)); // set up query without unions
+                    while (cursorOfBasketIds.moveToNext()) {
+                        SUBQUERIES.add( PROJECTION_QUERY + JOIN_QUERY_BASKET_INGREDIENT + cursorOfBasketIds.getLong(0) + WHERE_QUERY + cursorOfBasketIds.getLong(0));
+                    }
+
+                    String totalQuery = TextUtils.join(" UNION ", SUBQUERIES.toArray(new String[0]));
+                    cursor =  db.rawQuery(totalQuery,null);
+                    cursor.setNotificationUri(getContext().getContentResolver(),BASKETS_URI);
+                }
                 break;
             case INGREDIENTS_BASKET:
                 List<String> pathSegments = uri.getPathSegments();
@@ -281,17 +308,27 @@ public class MyContentProvider extends ContentProvider {
         * @param values must contain all necessary columns
          */
         int count; // Helper variable
-        String id;
+        String ingreedientID;
+        String basketID;
         switch (mUriMatcher.match(uri)) {
             case INGREDIENT:
-                id = uri.getLastPathSegment();
-                count = db.update(INGREDIENTS_TABLE_NAME,values,INGREDIENT_ID + "=" + id +(!TextUtils.isEmpty(selection)? " AND (" +selection + ")" : ""),selectionArgs);
+                ingreedientID = uri.getLastPathSegment();
+                count = db.update(INGREDIENTS_TABLE_NAME,values,INGREDIENT_ID + "=" + ingreedientID +(!TextUtils.isEmpty(selection)? " AND (" +selection + ")" : ""),selectionArgs);
                 getContext().getContentResolver().notifyChange(MyContentProvider.INGREDIENTS_URI,null);
                 break;
             case BASKET:
-                id = uri.getLastPathSegment();
-                count = db.update(BASKET_TABLE_NAME,values,BASKET_ID + "=" + id +(!TextUtils.isEmpty(selection)? " AND (" +selection + ")" : ""),selectionArgs);
+                basketID = uri.getLastPathSegment();
+                count = db.update(BASKET_TABLE_NAME,values,BASKET_ID + "=" + basketID +(!TextUtils.isEmpty(selection)? " AND (" +selection + ")" : ""),selectionArgs);
                 getContext().getContentResolver().notifyChange(MyContentProvider.BASKETS_URI,null);
+                break;
+            case INGREDIENT_BASKET:
+                ingreedientID = uri.getLastPathSegment();
+                basketID = uri.getPathSegments().get(1);
+
+                count = db.update(BASKET_INGREDIENT_TABLE_NAME,values,BASKET_ID + "=" + basketID
+                        + " AND " + INGREDIENT_ID + "=" + ingreedientID,null);
+                getContext().getContentResolver().notifyChange(Uri.withAppendedPath(MyContentProvider.BASKETS_URI,
+                        BASKET_ID + "/ingredient"),null);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
@@ -314,7 +351,7 @@ public class MyContentProvider extends ContentProvider {
     }
     public Cursor GetAllBaskets() {
         return this.query(MyContentProvider.BASKETS_URI,new String[] {
-                BASKET_NAME,BASKET_ID},null,null,null);
+                BASKET_NAME,BASKET_ID_WITH_TABLE},null,null,null);
 
     }
     public Uri AddIngredient(String ingredientName) {

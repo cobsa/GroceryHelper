@@ -63,9 +63,9 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
 
         SELECTION = null;
         PROJECTION = new String[] {MyContentProvider.BASKET_NAME,
-                MyContentProvider.BASKET_ID_WITH_TABLE};
-                /*"count("+ MyContentProvider.INGREDIENT_ID + ")",
-                "sum(" +MyContentProvider.BASKET_ITEM_CHECKED+")"}; */
+                MyContentProvider.BASKET_ID_WITH_TABLE,
+                "count("+ MyContentProvider.INGREDIENT_ID + ")",
+                "sum(" +MyContentProvider.BASKET_ITEM_CHECKED+")"};
 
         getLoaderManager().initLoader(0,new Bundle(), this);
         return view;

@@ -50,8 +50,10 @@ public class BasketRecyclerViewAdapter extends CursorRecyclerViewAdapter<BasketR
         holder.mBasketName.setText(cursor.
                 getString(cursor.getColumnIndex(MyContentProvider.BASKET_NAME)));
         holder.mBasketID = cursor.getLong(cursor.getColumnIndex(MyContentProvider.BASKET_ID));
-        holder.mProgressBar.setProgress(1); // TODO
-        holder.mProgressStatus.setText("1/10");
+        holder.mProgressStatus.setText(Long.toString(cursor.getLong(3)) +"/"
+                + Long.toString(cursor.getLong(2)));
+        holder.mProgressBar.setMax(cursor.getInt(2));
+        holder.mProgressBar.setProgress(cursor.getInt(3));
 
         // Setup menu on click listener
 
