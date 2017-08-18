@@ -99,7 +99,7 @@ public class BasketContentsFragment extends Fragment implements LoaderManager.Lo
         String[] PROJECTION = new String[] {
                 MyContentProvider.INGREDIENTS_NAME,
                 MyContentProvider.INGREDIENT_ID_WITH_TABLE,
-                MyContentProvider.INGREDIENT_AMOUNT,
+                "COUNT(" + MyContentProvider.INGREDIENT_ID_WITH_TABLE+ ")",
                 MyContentProvider.BASKET_ITEM_CHECKED};
 
         return new CursorLoader(mContext, Uri.withAppendedPath(MyContentProvider.BASKETS_URI,

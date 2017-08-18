@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.text.style.URLSpan;
 
 
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class MyContentProvider extends ContentProvider {
     private static final int BASKET = 4;
     private static final int INGREDIENTS_BASKET = 5;
     private static final int INGREDIENT_BASKET = 6;
+    private static final int INGREDIENTS_WITH_BASKET = 7;
 
     private SQLiteDatabase db;
 
@@ -50,6 +52,7 @@ public class MyContentProvider extends ContentProvider {
         mUriMatcher.addURI(PROVIDER_NAME,"basket/#",BASKET);
         mUriMatcher.addURI(PROVIDER_NAME,"basket/#/ingredient", INGREDIENTS_BASKET);
         mUriMatcher.addURI(PROVIDER_NAME,"basket/#/ingredient/#", INGREDIENT_BASKET);
+        mUriMatcher.addURI(PROVIDER_NAME,"ingredient/basket/#", INGREDIENTS_WITH_BASKET);
     }
 
     //URLS
@@ -57,22 +60,22 @@ public class MyContentProvider extends ContentProvider {
     public static final Uri BASKETS_URI = Uri.parse("content://" + PROVIDER_NAME + "/basket");
 
     // Database variables
-    private static String DATABASE_NAME = "Grocery_helper";
-    private static int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "Grocery_helper";
+    private static final int DATABASE_VERSION = 1;
     //Ingredient table
-    private static String INGREDIENTS_TABLE_NAME = "ingredients";
-    public static String INGREDIENTS_NAME = "ingredient_name";
-    public static String INGREDIENT_ID = "ingredient_id";
-    public static String INGREDIENT_ID_WITH_TABLE = INGREDIENTS_TABLE_NAME + "." + INGREDIENT_ID;
+    private static final String INGREDIENTS_TABLE_NAME = "ingredients";
+    public static final String INGREDIENTS_NAME = "ingredient_name";
+    public static final String INGREDIENT_ID = "ingredient_id";
+    public static final String INGREDIENT_ID_WITH_TABLE = INGREDIENTS_TABLE_NAME + "." + INGREDIENT_ID;
     // Basket Table
-    private static String BASKET_TABLE_NAME = "baskets";
-    public static String BASKET_NAME = "basket_name";
-    public static String BASKET_ID = "basket_id";
-    public static String BASKET_ID_WITH_TABLE = BASKET_TABLE_NAME + "." + BASKET_ID;
+    private static final String BASKET_TABLE_NAME = "baskets";
+    public static final String BASKET_NAME = "basket_name";
+    public static final String BASKET_ID = "basket_id";
+    public static final String BASKET_ID_WITH_TABLE = BASKET_TABLE_NAME + "." + BASKET_ID;
     // Basket/Ingredient Table
-    private static String BASKET_INGREDIENT_TABLE_NAME = "basket_ingredient";
-    public static String INGREDIENT_AMOUNT = "ingredient_amount";
-    public static String BASKET_ITEM_CHECKED = "basket_item_checked";
+    private static final String BASKET_INGREDIENT_TABLE_NAME = "basket_ingredient";
+    public static final String INGREDIENT_AMOUNT = "ingredient_amount";
+    public static final String BASKET_ITEM_CHECKED = "basket_item_checked";
 
     // JOIN TABLE QUERIES
     private static final String BASKET_INGEDIENT_TABLE_QUERY = INGREDIENTS_TABLE_NAME + " JOIN " + BASKET_INGREDIENT_TABLE_NAME
@@ -86,13 +89,13 @@ public class MyContentProvider extends ContentProvider {
 
         // TABLE QUERIES
 
-        private static String INGREDIENTS_TABLE = "CREATE TABLE " + INGREDIENTS_TABLE_NAME +
+        private static final String INGREDIENTS_TABLE = "CREATE TABLE " + INGREDIENTS_TABLE_NAME +
                 " (" + INGREDIENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 INGREDIENTS_NAME + " VARCHAR(100) NOT NULL );";
-        private static String BASKET_TABLE = "CREATE TABLE " + BASKET_TABLE_NAME +
+        private static final String BASKET_TABLE = "CREATE TABLE " + BASKET_TABLE_NAME +
                 " (" + BASKET_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 BASKET_NAME + " VARCHAR(100) NOT NULL);";
-        private static String BASKET_INGREDIENT_TABLE = "CREATE TABLE " + BASKET_INGREDIENT_TABLE_NAME + "("
+        private static final String BASKET_INGREDIENT_TABLE = "CREATE TABLE " + BASKET_INGREDIENT_TABLE_NAME + "("
                 + BASKET_ID + " INTEGER,"
                 + INGREDIENT_ID + " INTEGER, "
                 + INGREDIENT_AMOUNT + " INTEGER, "
@@ -167,6 +170,7 @@ public class MyContentProvider extends ContentProvider {
                 String JOIN_QUERY_BASKET_INGREDIENT = BASKET_TABLE_NAME  + " LEFT JOIN " + BASKET_INGREDIENT_TABLE_NAME
                         + " ON " + BASKET_TABLE_NAME + "." + BASKET_ID  + "=" +BASKET_INGREDIENT_TABLE_NAME+ "."+ BASKET_ID +" AND " + BASKET_TABLE_NAME + "." + BASKET_ID +
                         "=";
+
                 cursor = null;
                 // Get All available basket id from Baskets table
                 Cursor cursorOfBasketIds = db.query(BASKET_TABLE_NAME,new String[]{BASKET_ID},selection,null,null,null,sortOrder);
@@ -199,8 +203,14 @@ public class MyContentProvider extends ContentProvider {
                 /* Query needs to join INGREDIENT_TABLE with BASKET_INGREDIENT_TABLE_NAME
                 so query contains INGREDIENT_NAME etc fields.
                 */
-                cursor = db.query(BASKET_INGEDIENT_TABLE_QUERY,projection,BASKET_ID + "=" + id,selectionArgs,null,null,sortOrder);
+                cursor = db.query(BASKET_INGEDIENT_TABLE_QUERY,projection,BASKET_ID + "=" + id,selectionArgs,INGREDIENT_ID_WITH_TABLE,null,sortOrder);
                 cursor.setNotificationUri(getContext().getContentResolver(),Uri.withAppendedPath(BASKETS_URI,id + "/ingredient"));
+                break;
+            case INGREDIENTS_WITH_BASKET:
+                id = uri.getLastPathSegment();
+                String JOIN_QUERY = INGREDIENTS_TABLE_NAME + " LEFT JOIN " + BASKET_INGREDIENT_TABLE_NAME + " ON " + INGREDIENT_ID_WITH_TABLE + "=" + BASKET_INGREDIENT_TABLE_NAME + "." + INGREDIENT_ID + " AND " + BASKET_ID + "=" + BASKET_ID;
+                cursor = db.query(JOIN_QUERY,projection,selection,selectionArgs,INGREDIENT_ID_WITH_TABLE,null,sortOrder);
+                cursor.setNotificationUri(getContext().getContentResolver(),Uri.withAppendedPath(INGREDIENTS_URI,"/basket/" + id));
                 break;
             default:
                 return null;
@@ -251,11 +261,13 @@ public class MyContentProvider extends ContentProvider {
                 }
                 values.put(BASKET_ID, Long.parseLong(BasketID));
                 rowID = db.insert(BASKET_INGREDIENT_TABLE_NAME,null,values);
+                _uri = null;
                 if (rowID > 0 ) {
                     _uri = ContentUris.withAppendedId(Uri.withAppendedPath(BASKETS_URI, BasketID + "/ingredient/"),rowID);
                     getContext().getContentResolver().notifyChange(_uri, null);
-                    break;
+
                 }
+                break;
             default:
                 throw new SQLException("Unknown data type: " + uri);
         }

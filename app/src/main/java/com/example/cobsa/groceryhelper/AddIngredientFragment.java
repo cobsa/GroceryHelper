@@ -2,6 +2,7 @@ package com.example.cobsa.groceryhelper;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -74,9 +75,9 @@ public class AddIngredientFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String[] PROJECTION = new String[] {MyContentProvider.INGREDIENTS_NAME,MyContentProvider.INGREDIENT_ID};
+        String[] PROJECTION = new String[] {MyContentProvider.INGREDIENTS_NAME,MyContentProvider.INGREDIENT_ID_WITH_TABLE};
 
-        return new CursorLoader(mContext,MyContentProvider.INGREDIENTS_URI,PROJECTION,null,null,null);
+        return new CursorLoader(mContext, Uri.withAppendedPath(MyContentProvider.INGREDIENTS_URI,"/basket/" + mBasketID),PROJECTION,null,null,null);
     }
 
     @Override

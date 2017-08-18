@@ -19,9 +19,10 @@ public class AddItemAdapter extends CursorRecyclerViewAdapter<AddItemAdapter.Add
 
     public class AddItemViewHolder extends RecyclerView.ViewHolder {
 
-        TextView mItemName;
-        Long mItemID;
-        View mView;
+        private TextView mItemName;
+        private TextView mInBasket;
+        private Long mItemID;
+        private View mView;
 
         public AddItemViewHolder(View v) {
             super(v);
@@ -45,6 +46,7 @@ public class AddItemAdapter extends CursorRecyclerViewAdapter<AddItemAdapter.Add
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Add item to basket
                 ContentValues values = new ContentValues();
                 values.put(MyContentProvider.INGREDIENT_ID, holder.mItemID);
                 holder.mView.getContext().getContentResolver().

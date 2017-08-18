@@ -22,6 +22,7 @@ public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketConte
     public class BasketContentsViewHolder extends RecyclerView.ViewHolder {
 
         private TextView mIngredientName;
+        private TextView mIngredientAmount;
         private CheckBox mItemChecked;
         private Context mContext;
         private long mIngredientID;
@@ -30,6 +31,7 @@ public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketConte
             super(v);
             // Assign view to private variables
             mIngredientName = (TextView) v.findViewById(R.id.row_basket_contents_ingredient_name);
+            mIngredientAmount = (TextView) v.findViewById(R.id.row_basket_contents_ingredient_amount);
             mItemChecked = (CheckBox) v.findViewById(R.id.row_basket_contents_ingredient_checked);
 
             mContext = v.getContext();
@@ -49,6 +51,7 @@ public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketConte
 
         holder.mIngredientName.setText(cursor.getString(cursor.getColumnIndex(MyContentProvider.INGREDIENTS_NAME)));
         holder.mIngredientID = cursor.getLong(cursor.getColumnIndex(MyContentProvider.INGREDIENT_ID));
+        holder.mIngredientAmount.setText(Long.toString(cursor.getLong(2)));
         holder.mItemChecked.setChecked((cursor.getInt(cursor.getColumnIndex(MyContentProvider.BASKET_ITEM_CHECKED))==1)?true:false);
         holder.mItemChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
