@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "379602653965",
+    "firebase_url": "https://grocery-helper-7da92.firebaseio.com",
+    "project_id": "grocery-helper-7da92",
+    "storage_bucket": "grocery-helper-7da92.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:379602653965:android:025d6b2781e5e0b7",
+        "android_client_info": {
+          "package_name": "com.example.cobsa.groceryhelper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "379602653965-l2macc4130g0h65v50nl2ml5s401s1l2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cobsa.groceryhelper",
+            "certificate_hash": "2b3c01e0a1071872d1393d7660564a97ac580c5c"
+          }
+        },
+        {
+          "client_id": "379602653965-aqajg0tp99emhnjl47i6obk7ds2ta89m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKB_QqsygeWm71W0V99z0HQnG9EOLVsug"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "379602653965-aqajg0tp99emhnjl47i6obk7ds2ta89m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
