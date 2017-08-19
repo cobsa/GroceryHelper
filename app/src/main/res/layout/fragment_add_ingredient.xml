@@ -16,6 +16,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
+        android:src="@drawable/ic_add_black_24dp"
+        android:tint="@android:color/white"
         app:layout_anchor="@id/add_item_recycler_view"
         app:layout_anchorGravity="bottom|right|end" />
 

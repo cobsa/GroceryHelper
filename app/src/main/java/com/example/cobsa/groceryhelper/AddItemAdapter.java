@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
@@ -20,14 +21,16 @@ public class AddItemAdapter extends CursorRecyclerViewAdapter<AddItemAdapter.Add
     public class AddItemViewHolder extends RecyclerView.ViewHolder {
 
         private TextView mItemName;
-        private TextView mInBasket;
+        private ImageView mRemoveItem;
+        private TextView mItemCount;
         private long mItemID;
         private View mView;
 
         public AddItemViewHolder(View v) {
             super(v);
             mItemName = (TextView) v.findViewById(R.id.row_add_item_item_name);
-            mInBasket = (TextView) v.findViewById(R.id.row_add_item_in_basket);
+            mRemoveItem = (ImageView) v.findViewById(R.id.row_add_item_delete);
+            mItemCount = (TextView) v.findViewById(R.id.row_add_item_in_basket_count);
             mView = v;
         }
     }
@@ -46,8 +49,11 @@ public class AddItemAdapter extends CursorRecyclerViewAdapter<AddItemAdapter.Add
         holder.mItemID = cursor.getLong(cursor.getColumnIndex(MyContentProvider.INGREDIENT_ID));
         if(mBasketID.compareTo(cursor.getLong(2))==0) {
             visible = View.VISIBLE;
+            holder.mItemCount.setText(Long.toString(cursor.getLong(3)));
         }
-        holder.mInBasket.setVisibility(visible);
+        holder.mRemoveItem.setVisibility(visible);
+        holder.mItemCount.setVisibility(visible);
+        // Set click listener to add ingredient to basket
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,6 +63,16 @@ public class AddItemAdapter extends CursorRecyclerViewAdapter<AddItemAdapter.Add
                 holder.mView.getContext().getContentResolver().
                         insert(Uri.withAppendedPath(MyContentProvider.BASKETS_URI,
                                 Long.toString(mBasketID)+"/ingredient"),values);
+            }
+        });
+
+        // Set click listener to remove ingredient from basket
+        holder.mRemoveItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                holder.mView.getContext().getContentResolver()
+                        .delete(Uri.withAppendedPath(MyContentProvider.BASKETS_URI,
+                                Long.toString(mBasketID)+"/ingredient/"+holder.mItemID),null,null);
             }
         });
 
