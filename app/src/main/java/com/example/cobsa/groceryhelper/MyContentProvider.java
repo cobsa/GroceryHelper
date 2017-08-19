@@ -8,6 +8,7 @@ import android.content.UriMatcher;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
@@ -61,7 +62,7 @@ public class MyContentProvider extends ContentProvider {
 
     // Database variables
     private static final String DATABASE_NAME = "Grocery_helper";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     //Ingredient table
     private static final String INGREDIENTS_TABLE_NAME = "ingredients";
     public static final String INGREDIENTS_NAME = "ingredient_name";
@@ -91,7 +92,7 @@ public class MyContentProvider extends ContentProvider {
 
         private static final String INGREDIENTS_TABLE = "CREATE TABLE " + INGREDIENTS_TABLE_NAME +
                 " (" + INGREDIENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                INGREDIENTS_NAME + " VARCHAR(100) NOT NULL );";
+                INGREDIENTS_NAME + " VARCHAR(100) NOT NULL,  UNIQUE("+INGREDIENTS_NAME+"));";
         private static final String BASKET_TABLE = "CREATE TABLE " + BASKET_TABLE_NAME +
                 " (" + BASKET_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 BASKET_NAME + " VARCHAR(100) NOT NULL);";
@@ -238,7 +239,20 @@ public class MyContentProvider extends ContentProvider {
         String BasketID;
         switch (mUriMatcher.match(uri)) {
             case INGREDIENTS:
-                rowID = db.insert(INGREDIENTS_TABLE_NAME,null,values);
+                // Check if ingredient name is already in DB
+                try {
+                    rowID = db.insertOrThrow(INGREDIENTS_TABLE_NAME,null,values);
+                } catch (SQLiteConstraintException e) {
+                    Cursor cursor = db.query(INGREDIENTS_TABLE_NAME,new String[] {INGREDIENT_ID},
+                            INGREDIENTS_NAME + "=" + "?", new String[] { values.getAsString(INGREDIENTS_NAME) }
+                            ,null,null,null,null);
+                    cursor.moveToNext();
+
+                    _uri = Uri.withAppendedPath(INGREDIENTS_URI,
+                            Long.toString(cursor.getLong(cursor.getColumnIndex(INGREDIENT_ID))));
+                    break;
+                }
+
                 if (rowID > 0) {
                     // Add reference to content provider
                     _uri = ContentUris.withAppendedId(INGREDIENTS_URI,rowID);
