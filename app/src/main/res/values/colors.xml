@@ -6,4 +6,6 @@
     <color name="colorText">#2a3132</color>
     <color name="colorBorder">#a6a6a6</color>
     <color name="negative">#870000</color>
+
+    <color name="white">#FEFEFE</color>
 </resources>

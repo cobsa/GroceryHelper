@@ -51,26 +51,7 @@ public class BasketContentsFragment extends Fragment implements LoaderManager.Lo
 
 
         //Set floating Action button
-
-        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.add_ingredient);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentTransaction transaction =
-                        ((AppCompatActivity)mContext).getSupportFragmentManager().beginTransaction();
-
-                // Add new fragment and set arguments
-
-                Fragment newFragment = new AddIngredientFragment();
-                Bundle fragmentArgs = new Bundle();
-                fragmentArgs.putLong(AddIngredientFragment.BASKET_ID,mBasketID);
-                newFragment.setArguments(fragmentArgs);
-                transaction.replace(R.id.main_activity_fragment_container, newFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
-
-            }
-        });
+        assignFAB();
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_basket_contents_recycler_view);
         mLayoutManager = new LinearLayoutManager(mContext);
@@ -92,6 +73,8 @@ public class BasketContentsFragment extends Fragment implements LoaderManager.Lo
         super.onResume();
         // So data is refreshed when coming back to activity
         getLoaderManager().restartLoader(1,new Bundle(),this);
+        // Refresh FAB
+        assignFAB();
     }
 
     @Override
@@ -114,6 +97,30 @@ public class BasketContentsFragment extends Fragment implements LoaderManager.Lo
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mAdapter.swapCursor(null);
+    }
+
+
+    private void assignFAB() {
+        // Setup Floating action button to be correct for the fragment
+        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentTransaction transaction =
+                        ((AppCompatActivity)mContext).getSupportFragmentManager().beginTransaction();
+
+                // Add new fragment and set arguments
+
+                Fragment newFragment = new AddIngredientFragment();
+                Bundle fragmentArgs = new Bundle();
+                fragmentArgs.putLong(AddIngredientFragment.BASKET_ID,mBasketID);
+                newFragment.setArguments(fragmentArgs);
+                transaction.replace(R.id.main_activity_fragment_container, newFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+
+            }
+        });
     }
 
 }

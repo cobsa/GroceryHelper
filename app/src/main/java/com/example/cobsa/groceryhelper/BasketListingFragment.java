@@ -39,18 +39,7 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
 
         mContext = view.getContext();
 
-        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.add_basket);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment newFragment = new AddItemDialog();
-                Bundle args = new Bundle();
-                args.putInt(AddItemDialog.SHOW_TAG, AddItemDialog.BASKET);
-                newFragment.setArguments(args);
-                newFragment.setTargetFragment(BasketListingFragment.this,0);
-                newFragment.show(getFragmentManager(),"basket");
-            }
-        });
+        assignFAB();
 
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view_show_basket);
@@ -71,6 +60,12 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        assignFAB();
+    }
+
     // Cursor loader functions
 
     @Override
@@ -87,6 +82,22 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mAdapter.swapCursor(null);
+
+    }
+
+    private void assignFAB() {
+        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment newFragment = new AddItemDialog();
+                Bundle args = new Bundle();
+                args.putInt(AddItemDialog.SHOW_TAG, AddItemDialog.BASKET);
+                newFragment.setArguments(args);
+                newFragment.setTargetFragment(BasketListingFragment.this,0);
+                newFragment.show(getFragmentManager(),"basket");
+            }
+        });
 
     }
 

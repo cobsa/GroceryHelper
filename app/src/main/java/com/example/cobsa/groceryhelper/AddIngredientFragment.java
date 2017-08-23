@@ -47,18 +47,7 @@ public class AddIngredientFragment extends Fragment implements LoaderManager.Loa
             throw new IllegalArgumentException("Provide Basket ID.");
         }
 
-        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.add_ingredient_fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment newFragment = new AddItemDialog();
-                Bundle args = new Bundle();
-                args.putInt(AddItemDialog.SHOW_TAG, AddItemDialog.INGREDIENT);
-                newFragment.setArguments(args);
-                newFragment.setTargetFragment(AddIngredientFragment.this,0);
-                newFragment.show(getFragmentManager(),"basket");
-            }
-        });
+        assignFAB();
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.add_item_recycler_view);
         mLinearLayoutManager = new LinearLayoutManager(mContext);
@@ -71,6 +60,12 @@ public class AddIngredientFragment extends Fragment implements LoaderManager.Loa
 
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        assignFAB();
     }
 
     @Override
@@ -93,5 +88,20 @@ public class AddIngredientFragment extends Fragment implements LoaderManager.Loa
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mAdapter.swapCursor(null);
+    }
+
+    private void assignFAB() {
+        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment newFragment = new AddItemDialog();
+                Bundle args = new Bundle();
+                args.putInt(AddItemDialog.SHOW_TAG, AddItemDialog.INGREDIENT);
+                newFragment.setArguments(args);
+                newFragment.setTargetFragment(AddIngredientFragment.this,0);
+                newFragment.show(getFragmentManager(),"basket");
+            }
+        });
     }
 }
