@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/my_account_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/my_account"
+        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.502" />
+
+    <TextView
+        android:id="@+id/logged_as_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/logged_in_as"
+        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/my_account_header"
+        android:layout_marginLeft="32dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <TextView
+        android:id="@+id/my_account_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="example@example.com"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/logged_as_header"
+        android:layout_marginTop="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/logged_as_header"
+        app:layout_constraintLeft_toRightOf="@+id/logged_as_header"
+        android:layout_marginLeft="32dp"
+        app:layout_constraintVertical_bias="0.487"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.511" />
+
+    <Button
+        android:id="@+id/sign_up_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sign_up"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@+id/logged_as_header"
+        android:layout_marginLeft="32dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/log_in"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/sign_up_button"
+        android:layout_marginTop="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/sign_up_button"
+        android:layout_marginRight="32dp"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <Button
+        android:id="@+id/logout_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="32dp"
+        android:text="@string/log_out"
+        android:visibility="invisible"
+        android:onClick="logOutButton"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logged_as_header" />
+
+
+</android.support.constraint.ConstraintLayout>

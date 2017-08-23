@@ -6,19 +6,21 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TimeUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -37,6 +39,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String FRAGMENT_TAG = "fragment_tag";
+    private int CURRENT_NAV_ID;
+
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
@@ -44,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private Toolbar mToolbar;
+    private View mHeaderView;
+    private TextView mEmailAddress;
+
+    boolean shouldHomeOnBackButton = true; // setup back button behaviour
 
 
     @Override
@@ -57,24 +66,22 @@ public class MainActivity extends AppCompatActivity {
 
         // Setting up navigation drawer
 
-        mMenuTitles = new String[] {"HOME", "SETTINGS", "SIGNUP", "Login"};
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mNavigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        mHeaderView = mNavigationView.getHeaderView(0);
+        mEmailAddress = (TextView) mHeaderView.findViewById(R.id.nav_header_email);
+
 
         if(findViewById(R.id.main_activity_fragment_container) != null) {
             if (savedInstanceState != null) {
                 return;
             }
 
-            BasketListingFragment fragment = new BasketListingFragment();
-            fragment.setArguments(new Bundle());
-            getSupportFragmentManager().beginTransaction().
-                    add(R.id.main_activity_fragment_container, fragment).commit();
-            mDrawerLayout.closeDrawers();
+            setFragment(new BasketListingFragment());
+            CURRENT_NAV_ID = R.id.nav_home;
+            setUpNavigation();
         }
-
-
-
 
         // User auth setup
         mAuth = FirebaseAuth.getInstance();
@@ -84,48 +91,15 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if(user != null) {
                     // User is signed in
-                    Log.d("Firebase", "User logged in: " + user.getUid());
+                    mEmailAddress.setText(user.getEmail());
                 } else {
                     // User is signed out
-                    Log.d("Firebase", "User logged out");
+                    mEmailAddress.setText(getString(R.string.sign_in_or_register));
                 }
             }
         };
 
         new SyncIngredients().execute();
-    }
-
-
-    private class SyncIngredients extends AsyncTask<Void,Integer, Void> {
-        @Override
-        protected Void doInBackground(Void... params) {
-            final FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference myRef;
-            Cursor cursor = getContentResolver().query(MyContentProvider.INGREDIENTS_URI,new String[] {
-                    MyContentProvider.INGREDIENTS_NAME},null,null,null);
-            while(cursor.moveToNext()) {
-                myRef = database.getReference("ingredient").
-                        child(cursor.getString(cursor.getColumnIndex(MyContentProvider.INGREDIENTS_NAME))).child("TIMESTAMP");
-                myRef.setValue(System.currentTimeMillis());
-
-            }
-            myRef = database.getReference("ingredient");
-            myRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    for (DataSnapshot ingredient_name : dataSnapshot.getChildren() ) {
-                        ContentValues values = new ContentValues();
-                        values.put(MyContentProvider.INGREDIENTS_NAME,ingredient_name.getKey());
-                        getContentResolver().insert(MyContentProvider.INGREDIENTS_URI,values);
-                    }
-                }
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-            return null;
-        }
     }
 
     @Override
@@ -141,6 +115,19 @@ public class MainActivity extends AppCompatActivity {
             mAuth.removeAuthStateListener(mAuthListener);
         }
     }
+
+    private void setFragment(Fragment fragment) {
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_activity_fragment_container,fragment)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).commit();
+
+        mDrawerLayout.closeDrawers();
+    }
+
+    /*
+    * Google firebase auth functions
+    * */
+
     public void signUpButton(View v) {
         EditText emailEditText = (EditText) findViewById(R.id.email_edit_text);
         EditText passwordEditText = (EditText) findViewById(R.id.password_edit_text);
@@ -160,21 +147,19 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, task.getException().toString(),
                             Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(MainActivity.this,
-                            getString(R.string.logged_in_as)+ " " + mAuth.getCurrentUser().getEmail(),
-                            Toast.LENGTH_SHORT).show();
-                    getSupportFragmentManager().popBackStack();
+                    getSupportFragmentManager().beginTransaction().
+                            replace(R.id.main_activity_fragment_container,new MyAccountFragment())
+                            .commit();
                 }
             }
         });
     }
 
     public void signInButton(View v) {
-        EditText emailEditText = (EditText) findViewById(R.id.email_edit_text);
-        EditText passwordEditText = (EditText) findViewById(R.id.password_edit_text);
+        EditText emailEditText = (EditText) findViewById(R.id.login_email_edit_text);
+        EditText passwordEditText = (EditText) findViewById(R.id.login_password_edit_text);
 
         this.SignIn(emailEditText.getText().toString(),passwordEditText.getText().toString());
-
     }
 
     private void SignIn(String email, String password) {
@@ -195,23 +180,113 @@ public class MainActivity extends AppCompatActivity {
                                     Toast.LENGTH_SHORT).show();
                         }
 
+                        getSupportFragmentManager().beginTransaction().
+                                replace(R.id.main_activity_fragment_container,new MyAccountFragment())
+                                .commit();
+
                     }
                 });
     }
 
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+    public void logOutButton(View v) {
+        this.logout();
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_activity_fragment_container,new MyAccountFragment())
+                .commit();
 
+
+    }
+
+    private void logout() {
+        mAuth.signOut();
+    }
+
+
+    private class SyncIngredients extends AsyncTask<Void,Integer, Void> {
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
+        protected Void doInBackground(Void... params) {
+            final FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference myRef;
+            Cursor cursor = getContentResolver().query(MyContentProvider.INGREDIENTS_URI,new String[] {
+                    MyContentProvider.INGREDIENTS_NAME},null,null,null);
+            while(cursor.moveToNext()) {
+                myRef = database.getReference("ingredient").
+                        child(cursor.getString(cursor.getColumnIndex(MyContentProvider.INGREDIENTS_NAME))).child("TIMESTAMP");
+                myRef.setValue(System.currentTimeMillis());
+
+            }
+                        myRef = database.getReference("ingredient");
+                        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot ingredient_name : dataSnapshot.getChildren() ) {
+                                    ContentValues values = new ContentValues();
+                                    values.put(MyContentProvider.INGREDIENTS_NAME,ingredient_name.getKey());
+                                    getContentResolver().insert(MyContentProvider.INGREDIENTS_URI,values);
+                                }
+                            }
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                        return null;
+                }
+            }
+
+            private void setUpNavigation() {
+                mNavigationView.setNavigationItemSelectedListener(
+                        new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.nav_home:
+                                setFragment(new BasketListingFragment());
+                                CURRENT_NAV_ID = R.id.nav_home;
+                                break;
+                            case R.id.nav_my_account:
+                                setFragment(new MyAccountFragment());
+                        CURRENT_NAV_ID = R.id.nav_my_account;
+                        break;
+                    case R.id.nav_settings:
+                        // TODO add settings fragment
+                        CURRENT_NAV_ID = R.id.nav_settings;
+                        break;
+                    case R.id.nav_about:
+                        // TODO add about fragment
+                        CURRENT_NAV_ID = R.id.nav_about;
+                        break;
+                    default:
+                        setFragment(new BasketListingFragment());
+                        CURRENT_NAV_ID = R.id.nav_home;
+
+                }
+
+                item.setChecked(true);
+                return true;
+            }
+        });
+
+        ActionBarDrawerToggle actionBarDrawerToggle =
+                new ActionBarDrawerToggle(this,mDrawerLayout,mToolbar,
+                        R.string.open_drawer,R.string.close_drawer);
+        mDrawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState(); // called as per documentation
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawers();
+            return;
         }
 
-        private void selectItem(int position) {
-            Fragment fragment = new SignupFragment();
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.main_activity_fragment_container,fragment).addToBackStack(null).commit();
-
-
+        if(shouldHomeOnBackButton && getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            if(CURRENT_NAV_ID != R.id.nav_home) {
+                setFragment(new BasketListingFragment());
+                CURRENT_NAV_ID = R.id.nav_home;
+                return;
+            }
         }
+        super.onBackPressed();
     }
 }
