@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private View mHeaderView;
     private TextView mEmailAddress;
+    private FloatingActionButton mFloatingActionButton;
 
     boolean shouldHomeOnBackButton = true; // setup back button behaviour
 
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
+        mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
 
         // Setting up navigation drawer
 
@@ -117,7 +120,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setFragment(Fragment fragment) {
+        // Switch fragment, hide fab as default (Fragments that use FAB have to make it visible again
+        // and close drawer
 
+        mFloatingActionButton.setVisibility(View.INVISIBLE);
         getSupportFragmentManager().beginTransaction().replace(R.id.main_activity_fragment_container,fragment)
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).commit();
 

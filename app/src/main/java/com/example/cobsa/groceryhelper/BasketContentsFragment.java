@@ -103,6 +103,7 @@ public class BasketContentsFragment extends Fragment implements LoaderManager.Lo
     private void assignFAB() {
         // Setup Floating action button to be correct for the fragment
         FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab.setVisibility(View.VISIBLE);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
