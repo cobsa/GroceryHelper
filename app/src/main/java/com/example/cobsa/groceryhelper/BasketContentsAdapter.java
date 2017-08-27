@@ -17,7 +17,7 @@ import android.widget.TextView;
  * Created by Cobsa on 17.8.2017.
  */
 
-public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketContentsAdapter.BasketContentsViewHolder> {
+public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketContentsAdapter.BasketContentsViewHolder>{
 
     public class BasketContentsViewHolder extends RecyclerView.ViewHolder {
 
@@ -26,6 +26,7 @@ public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketConte
         private CheckBox mItemChecked;
         private Context mContext;
         private long mIngredientID;
+        private View mView;
 
         public BasketContentsViewHolder(View v) {
             super(v);
@@ -33,6 +34,7 @@ public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketConte
             mIngredientName = (TextView) v.findViewById(R.id.row_basket_contents_ingredient_name);
             mIngredientAmount = (TextView) v.findViewById(R.id.row_basket_contents_ingredient_amount);
             mItemChecked = (CheckBox) v.findViewById(R.id.row_basket_contents_ingredient_checked);
+            mView = v;
 
             mContext = v.getContext();
 
@@ -53,17 +55,28 @@ public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketConte
         holder.mIngredientID = cursor.getLong(cursor.getColumnIndex(MyContentProvider.INGREDIENT_ID));
         holder.mIngredientAmount.setText(Long.toString(cursor.getLong(2)));
         holder.mItemChecked.setChecked((cursor.getInt(cursor.getColumnIndex(MyContentProvider.BASKET_ITEM_CHECKED))==1)?true:false);
-        holder.mItemChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        holder.mItemChecked.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            public void onClick(View v) {
+                // Toggles item checked value
                 ContentValues values = new ContentValues();
                 values.put(MyContentProvider.BASKET_ITEM_CHECKED, (holder.mItemChecked.isChecked()?1:0));
                 holder.mContext.getContentResolver().update(Uri.withAppendedPath(MyContentProvider.BASKETS_URI,
                         Long.toString(mBasketID)+ "/ingredient/" + Long.toString(holder.mIngredientID)),values,null,null);
             }
         });
-
+        holder.mView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ContentValues values = new ContentValues();
+                values.put(MyContentProvider.BASKET_ITEM_CHECKED, (holder.mItemChecked.isChecked()?0:1));
+                holder.mContext.getContentResolver().update(Uri.withAppendedPath(MyContentProvider.BASKETS_URI,
+                        Long.toString(mBasketID)+ "/ingredient/" + Long.toString(holder.mIngredientID)),values,null,null);
+            }
+        });
     }
+
+
 
     @Override
     public BasketContentsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
