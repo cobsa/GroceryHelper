@@ -28,8 +28,6 @@ public class BasketContentsFragment extends Fragment implements LoaderManager.Lo
 
 
     public static final String BASKET_ID = "BASKETID";
-    private RecyclerView mRecyclerView;
-    private LinearLayoutManager mLayoutManager;
     private BasketContentsAdapter mAdapter;
     private Context mContext;
     private long mBasketID;
@@ -53,8 +51,8 @@ public class BasketContentsFragment extends Fragment implements LoaderManager.Lo
         //Set floating Action button
         assignFAB();
 
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_basket_contents_recycler_view);
-        mLayoutManager = new LinearLayoutManager(mContext);
+        RecyclerView mRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_basket_contents_recycler_view);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(mContext);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         // set adapter

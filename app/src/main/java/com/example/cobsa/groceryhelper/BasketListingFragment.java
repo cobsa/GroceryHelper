@@ -29,7 +29,6 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
     private String[] PROJECTION;
 
     private BasketRecyclerViewAdapter mAdapter;
-    private LinearLayoutManager mLayoutManager;
     private Context mContext;
     private SwipeRefreshLayout mSwipeToRefresh;
 
@@ -43,7 +42,7 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
         assignFAB();
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view_show_basket);
-        mLayoutManager = new LinearLayoutManager(mContext);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(mContext);
         recyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new BasketRecyclerViewAdapter();
         recyclerView.setAdapter(mAdapter);

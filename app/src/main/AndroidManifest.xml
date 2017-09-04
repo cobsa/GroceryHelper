@@ -17,7 +17,8 @@
         </activity>
         <provider
             android:authorities="com.example.cobsa.groceryhelper.MyContentProvider"
-            android:name=".MyContentProvider"/>
+            android:name=".MyContentProvider"
+            android:exported="false" />
     </application>
 
 </manifest>

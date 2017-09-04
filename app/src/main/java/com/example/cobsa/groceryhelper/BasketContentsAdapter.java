@@ -54,7 +54,7 @@ public class BasketContentsAdapter extends CursorRecyclerViewAdapter<BasketConte
         holder.mIngredientName.setText(cursor.getString(cursor.getColumnIndex(MyContentProvider.INGREDIENTS_NAME)));
         holder.mIngredientID = cursor.getLong(cursor.getColumnIndex(MyContentProvider.INGREDIENT_ID));
         holder.mIngredientAmount.setText(Long.toString(cursor.getLong(2)));
-        holder.mItemChecked.setChecked((cursor.getInt(cursor.getColumnIndex(MyContentProvider.BASKET_ITEM_CHECKED))==1)?true:false);
+        holder.mItemChecked.setChecked((cursor.getInt(cursor.getColumnIndex(MyContentProvider.BASKET_ITEM_CHECKED)) == 1));
         holder.mItemChecked.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

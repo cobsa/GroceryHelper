@@ -24,20 +24,18 @@ public class MyAccountFragment extends Fragment {
     private Button mloginButton;
     private Button mSignUpButton;
     private Button mLogoutButton;
-    private FirebaseAuth mAuth;
     private FirebaseUser mUser;
-    private View mView;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mView = inflater.inflate(R.layout.fragment_my_account,container,false);
+        View mView = inflater.inflate(R.layout.fragment_my_account, container, false);
 
         mloginButton = (Button) mView.findViewById(R.id.login_button);
         mLogoutButton = (Button) mView.findViewById(R.id.logout_button);
         mSignUpButton = (Button) mView.findViewById(R.id.sign_up_button);
         mEmailTextView = (TextView) mView.findViewById(R.id.my_account_email);
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
         mAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
             @Override

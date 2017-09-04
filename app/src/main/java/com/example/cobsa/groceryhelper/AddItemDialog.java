@@ -25,8 +25,6 @@ public class AddItemDialog extends DialogFragment {
     public static final int INGREDIENT = 2;
 
     private EditText mEditText;
-    private TextView mTextView;
-    private String mTitle;
     private int tagId;
 
     @Override
@@ -44,9 +42,10 @@ public class AddItemDialog extends DialogFragment {
         View inflatedView = inflater.inflate(R.layout.add_item_layout, null);
         // Get editText and change title
         mEditText = (EditText) inflatedView.findViewById(R.id.add_item_name);
-        mTextView = (TextView) inflatedView.findViewById(R.id.add_item_title);
+        TextView mTextView = (TextView) inflatedView.findViewById(R.id.add_item_title);
 
         // Get title from outside fragment
+        String mTitle;
         switch (tagId) {
             case BASKET:
                 mTitle = getString(R.string.add_basket);

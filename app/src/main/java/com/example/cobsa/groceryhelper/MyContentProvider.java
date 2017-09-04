@@ -250,6 +250,7 @@ public class MyContentProvider extends ContentProvider {
 
                     _uri = Uri.withAppendedPath(INGREDIENTS_URI,
                             Long.toString(cursor.getLong(cursor.getColumnIndex(INGREDIENT_ID))));
+                    cursor.close();
                     break;
                 }
 

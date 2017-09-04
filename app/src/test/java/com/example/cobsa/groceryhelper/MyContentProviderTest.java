@@ -48,7 +48,7 @@ public class MyContentProviderTest {
             if(cursor != null) {
                 cursor.moveToNext();
                 if(BuildConfig.DEBUG && !basketName.equals(cursor.getString(0))) {
-                    throw new AssertionError("Column data doesn't match. Excpected: " + basketName + " Got: " + cursor.getString(0));
+                    throw new AssertionError("Column data doesn't match. Expected: " + basketName + " Got: " + cursor.getString(0));
                 }
                 cursor.close();
             }
@@ -61,8 +61,8 @@ public class MyContentProviderTest {
 
     @Test
     public void RemoveBasketTest() {
-        for(String baskeName: mBasketNames) {
-            Uri uri = cp.AddBasket(baskeName);
+        for(String basketName: mBasketNames) {
+            Uri uri = cp.AddBasket(basketName);
             if(BuildConfig.DEBUG && uri == null) {
                 throw new AssertionError("Uri is null.");
             }
@@ -84,7 +84,7 @@ public class MyContentProviderTest {
             throw new AssertionError("Cursor is null.");
         }
         if(BuildConfig.DEBUG && cursor.getCount() != mBasketNames.length) {
-            throw new AssertionError("Row counts don't match: Ecpected: " + mBasketNames.length + " Got: " + cursor.getCount());
+            throw new AssertionError("Row counts don't match: Expected: " + mBasketNames.length + " Got: " + cursor.getCount());
         }
     }
     @Test
@@ -122,7 +122,7 @@ public class MyContentProviderTest {
             if(cursor != null) {
                 cursor.moveToNext();
                 if(BuildConfig.DEBUG && !ingredientName.equals(cursor.getString(0))) {
-                    throw new AssertionError("Column data doesn't match. Excpected: " + ingredientName + " Got: " + cursor.getString(0));
+                    throw new AssertionError("Column data doesn't match. Expected: " + ingredientName + " Got: " + cursor.getString(0));
                 }
                 cursor.close();
             }
@@ -158,7 +158,7 @@ public class MyContentProviderTest {
             throw new AssertionError("Cursor is null.");
         }
         if(BuildConfig.DEBUG && cursor.getCount() != mIngredientNames.length) {
-            throw new AssertionError("Row counts don't match: Ecpected: " + mIngredientNames.length + " Got: " + cursor.getCount());
+            throw new AssertionError("Row counts don't match: Expected: " + mIngredientNames.length + " Got: " + cursor.getCount());
         }
     }
     @Test
@@ -244,6 +244,7 @@ public class MyContentProviderTest {
             } else {
                 throw new AssertionError("Cursor is null");
             }
+            cursor.close();
 
         }
         //Remove ingredients from baskets

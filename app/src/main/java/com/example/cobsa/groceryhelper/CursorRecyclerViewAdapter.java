@@ -53,11 +53,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
         mCursor = newCursor;
 
         // Set dataValid tag to false if mCursor is null, otherwise to true
-        if (mCursor == null) {
-            dataValid = false;
-        } else {
-            dataValid = true;
-        }
+        dataValid = mCursor != null;
         notifyDataSetChanged();
     }
 }

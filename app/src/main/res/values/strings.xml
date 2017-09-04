@@ -8,7 +8,7 @@
     <string name="delete">Delete</string>
     <string name="modify">Modify</string>
     <string name="cancel">Cancel</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="add_basket">Add Basket</string>
     <string name="add_ingredient">Add Ingredient</string>
     <string name="search_hint">Search for ingredient or recipe</string>

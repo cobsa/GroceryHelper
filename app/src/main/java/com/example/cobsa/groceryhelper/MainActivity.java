@@ -53,11 +53,10 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private Toolbar mToolbar;
-    private View mHeaderView;
     private TextView mEmailAddress;
     private FloatingActionButton mFloatingActionButton;
 
-    boolean shouldHomeOnBackButton = true; // setup back button behaviour
+    private boolean shouldHomeOnBackButton = true; // setup back button behaviour
 
 
     @Override
@@ -75,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mNavigationView = (NavigationView) findViewById(R.id.nav_view);
 
-        mHeaderView = mNavigationView.getHeaderView(0);
+        View mHeaderView = mNavigationView.getHeaderView(0);
         mEmailAddress = (TextView) mHeaderView.findViewById(R.id.nav_header_email);
 
 
@@ -138,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /*
-    * Google firebase auth functions
+    * Google fire base auth functions
     * */
 
     public void signUpButton(View v) {
@@ -158,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                Log.d("Firebase", "createUserWithEmail:onComplete:" + task.isSuccessful());
+                Log.d("Fire base", "createUserWithEmail:onComplete:" + task.isSuccessful());
                 if (!task.isSuccessful()) {
                     // Show error if creating account isn't successful
                     Toast.makeText(MainActivity.this, task.getException().getMessage(),
@@ -236,22 +235,18 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(Void... params) {
             final FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference myRef;
-            Cursor cursor = getContentResolver().query(MyContentProvider.INGREDIENTS_URI,new String[] {
-                    MyContentProvider.INGREDIENTS_NAME},null,null,null);
-            while(cursor.moveToNext()) {
-                myRef = database.getReference("ingredient").
-                        child(cursor.getString(cursor.getColumnIndex(MyContentProvider.INGREDIENTS_NAME))).child("TIMESTAMP");
-                myRef.setValue(System.currentTimeMillis());
-
-            }
+            // Download preset list from cloud storage
             myRef = database.getReference("ingredient");
             myRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot ingredient_name : dataSnapshot.getChildren() ) {
-                        ContentValues values = new ContentValues();
-                        values.put(MyContentProvider.INGREDIENTS_NAME,ingredient_name.getKey());
-                        getContentResolver().insert(MyContentProvider.INGREDIENTS_URI,values);
+                        // only sync ingredients with value "true"
+                        if((boolean)ingredient_name.getValue()) {
+                            ContentValues values = new ContentValues();
+                            values.put(MyContentProvider.INGREDIENTS_NAME,ingredient_name.getKey());
+                            getContentResolver().insert(MyContentProvider.INGREDIENTS_URI,values);
+                        }
                     }
                 }
                 @Override
@@ -270,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
     private class SyncBaskets extends AsyncTask<Void,Integer,Void> {
         @Override
         protected Void doInBackground(Void... params) {
-            if(mAuth.getCurrentUser().getUid() == null) {
+            if(mAuth.getCurrentUser() == null) {
                 return null;
             }
             final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -296,11 +291,11 @@ public class MainActivity extends AppCompatActivity {
                                         getContentResolver().query(MyContentProvider.INGREDIENTS_URI,
                                                 new String[] {MyContentProvider.INGREDIENT_ID},
                                                 MyContentProvider.INGREDIENTS_NAME + "= ?",new String[] {ingredient_name.getKey()},null);
-                                ContentValues basketIngrediedientValues = new ContentValues();
+                                ContentValues basketIngredientValues = new ContentValues();
                                 if(ingredient_query.getCount() == 1 && ingredient_query.moveToNext()) {
                                     // Add existing ingredient to basket
-                                    basketIngrediedientValues.put(MyContentProvider.INGREDIENT_ID,ingredient_query.getString(0));
-                                    basketIngrediedientValues.put(MyContentProvider.INGREDIENT_AMOUNT, (Long) ingredient_name.getValue());
+                                    basketIngredientValues.put(MyContentProvider.INGREDIENT_ID,ingredient_query.getString(0));
+                                    basketIngredientValues.put(MyContentProvider.INGREDIENT_AMOUNT, (Long) ingredient_name.getValue());
 
                                 }
                                 else {
@@ -309,16 +304,18 @@ public class MainActivity extends AppCompatActivity {
                                     ingredient_values.put(MyContentProvider.INGREDIENTS_NAME,ingredient_name.getKey());
                                     Uri _uri = getContentResolver().insert(MyContentProvider.INGREDIENTS_URI,ingredient_values);
                                     String ingredient_id = _uri.getLastPathSegment();
-                                    basketIngrediedientValues.put(MyContentProvider.INGREDIENT_ID,Long.getLong(ingredient_id));
-                                    basketIngrediedientValues.put(MyContentProvider.INGREDIENT_AMOUNT, Integer.getInteger((String)ingredient_name.getValue()));
+                                    basketIngredientValues.put(MyContentProvider.INGREDIENT_ID,Long.getLong(ingredient_id));
+                                    basketIngredientValues.put(MyContentProvider.INGREDIENT_AMOUNT, (Long) ingredient_name.getValue());
 
                                 }
 
                                 // Submit ingredient to db
                                 Uri basketIngredientUri = Uri.withAppendedPath(MyContentProvider.BASKETS_URI,basket_id + "/ingredient");
-                                getContentResolver().insert(basketIngredientUri,basketIngrediedientValues);
+                                getContentResolver().insert(basketIngredientUri,basketIngredientValues);
+                                ingredient_query.close();
                             }
                         }
+                        cursor.close();
                     }
                 }
 
@@ -350,7 +347,9 @@ public class MainActivity extends AppCompatActivity {
                             .setValue(ingredientsInBasketCursor.getInt(1));
                     userTable.push();
                 }
+                ingredientsInBasketCursor.close();
             }
+            basketCursor.close();
             return null;
         }
     }
