@@ -24,9 +24,11 @@
     <string name="nav_settings">Settings</string>
     <string name="nav_about">About</string>
 
-
+    // Registering/loging texts
     <string name="sign_in_or_register">Sign in or register</string>
-
+    <string name="user_email_logged_out">Logged out </string>
+    <string name="account_created">Account Created: </string>
+    <string name="insert_email_and_password">Insert email and password</string>
 
     // My account fragment
 

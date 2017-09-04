@@ -15,13 +15,4 @@
             android:title="@string/nav_settings"/>
     </group>
 
-    <item android:title="Other">
-        <menu>
-            <item
-                android:id="@+id/nav_about"
-                android:title="@string/nav_about"/>
-
-        </menu>
-    </item>
-
 </menu>

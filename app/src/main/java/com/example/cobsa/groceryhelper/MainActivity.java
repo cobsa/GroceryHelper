@@ -1,6 +1,7 @@
 package com.example.cobsa.groceryhelper;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -19,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -148,19 +150,26 @@ public class MainActivity extends AppCompatActivity {
 
     private void CreateAccount(String email, String password) {
         // Validate input
-
+        if(email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(getBaseContext(),getString(R.string.insert_email_and_password),Toast.LENGTH_LONG).show();
+            return;
+        }
         // Add user
         mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d("Firebase", "createUserWithEmail:onComplete:" + task.isSuccessful());
                 if (!task.isSuccessful()) {
-                    Toast.makeText(MainActivity.this, task.getException().toString(),
+                    // Show error if creating account isn't successful
+                    Toast.makeText(MainActivity.this, task.getException().getMessage(),
                             Toast.LENGTH_SHORT).show();
                 } else {
+                    // Redirect user to main page and display toast
                     getSupportFragmentManager().beginTransaction().
                             replace(R.id.main_activity_fragment_container,new MyAccountFragment())
                             .commit();
+                    Toast.makeText(getBaseContext(),getString(R.string.account_created) + " " + mAuth.getCurrentUser().getEmail(),Toast.LENGTH_LONG).show();
+                    hideKeyboard();
                 }
             }
         });
@@ -175,28 +184,35 @@ public class MainActivity extends AppCompatActivity {
 
     private void SignIn(String email, String password) {
         // Validate input
-
+        if(email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(getBaseContext(),getString(R.string.insert_email_and_password),Toast.LENGTH_LONG).show();
+            return;
+        }
 
         // Login user
-
         mAuth.signInWithEmailAndPassword(email,password).
                 addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d("Firebase", "signInWithEmail:onComplete:" + task.isSuccessful());
-
+                        // Login unsuccessful
                         if (!task.isSuccessful()) {
-                            Log.w("Firebase", "signInWithEmail:failed", task.getException());
-                            Toast.makeText(MainActivity.this, R.string.auth_failed,
+                            Toast.makeText(MainActivity.this, task.getException().getMessage(),
                                     Toast.LENGTH_SHORT).show();
+                        } else {
+                            // login successful
+                            getSupportFragmentManager().beginTransaction().
+                                    replace(R.id.main_activity_fragment_container,new MyAccountFragment())
+                                    .commit();
+                            Toast.makeText(getBaseContext(),getString(R.string.logged_in_as) + " " + mAuth.getCurrentUser().getEmail(),Toast.LENGTH_LONG).show();
+                            hideKeyboard();
                         }
-
-                        getSupportFragmentManager().beginTransaction().
-                                replace(R.id.main_activity_fragment_container,new MyAccountFragment())
-                                .commit();
-
                     }
                 });
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY,0);
     }
 
     public void logOutButton(View v) {
@@ -208,7 +224,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void logout() {
+
+        String email = mAuth.getCurrentUser().getEmail();
         mAuth.signOut();
+        Toast.makeText(this,getString(R.string.user_email_logged_out) + " " + email, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -353,10 +372,6 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.nav_settings:
                     // TODO add settings fragment
                     CURRENT_NAV_ID = R.id.nav_settings;
-                    break;
-                case R.id.nav_about:
-                    // TODO add about fragment
-                    CURRENT_NAV_ID = R.id.nav_about;
                     break;
                 default:
                     setFragment(new BasketListingFragment());
