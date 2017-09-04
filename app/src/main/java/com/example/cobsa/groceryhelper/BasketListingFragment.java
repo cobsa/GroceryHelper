@@ -11,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -27,9 +28,10 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
     private String SELECTION;
     private String[] PROJECTION;
 
-    BasketRecyclerViewAdapter mAdapter;
-    LinearLayoutManager mLayoutManager;
-    Context mContext;
+    private BasketRecyclerViewAdapter mAdapter;
+    private LinearLayoutManager mLayoutManager;
+    private Context mContext;
+    private SwipeRefreshLayout mSwipeToRefresh;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
@@ -38,9 +40,7 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
         View view = inflater.inflate(R.layout.fragment_basket_listing,container,false);
 
         mContext = view.getContext();
-
         assignFAB();
-
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view_show_basket);
         mLayoutManager = new LinearLayoutManager(mContext);
@@ -48,6 +48,18 @@ public class BasketListingFragment extends Fragment implements LoaderManager.Loa
         mAdapter = new BasketRecyclerViewAdapter();
         recyclerView.setAdapter(mAdapter);
 
+        // Set Swipe to refresh listener
+        mSwipeToRefresh = (SwipeRefreshLayout) view.findViewById(R.id.basket_listing_swipe_to_refresh);
+        if(mSwipeToRefresh != null) {
+            mSwipeToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    MainActivity activity = (MainActivity) getActivity();
+                    activity.SyncBaskets();
+                    mSwipeToRefresh.setRefreshing(false);
+                }
+            });
+        }
         // Set cursor loader arguments
 
         SELECTION = null;

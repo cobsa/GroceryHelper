@@ -2,6 +2,7 @@ package com.example.cobsa.groceryhelper;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -103,6 +104,10 @@ public class MainActivity extends AppCompatActivity {
         };
 
         new SyncIngredients().execute();
+        // Sync Baskets if user is logged in
+        if(mAuth.getCurrentUser() != null) {
+            new SyncBaskets().execute();
+        }
     }
 
     @Override
@@ -220,58 +225,147 @@ public class MainActivity extends AppCompatActivity {
                 myRef.setValue(System.currentTimeMillis());
 
             }
-                        myRef = database.getReference("ingredient");
-                        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                for (DataSnapshot ingredient_name : dataSnapshot.getChildren() ) {
-                                    ContentValues values = new ContentValues();
-                                    values.put(MyContentProvider.INGREDIENTS_NAME,ingredient_name.getKey());
-                                    getContentResolver().insert(MyContentProvider.INGREDIENTS_URI,values);
-                                }
-                            }
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
+            myRef = database.getReference("ingredient");
+            myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot ingredient_name : dataSnapshot.getChildren() ) {
+                        ContentValues values = new ContentValues();
+                        values.put(MyContentProvider.INGREDIENTS_NAME,ingredient_name.getKey());
+                        getContentResolver().insert(MyContentProvider.INGREDIENTS_URI,values);
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
+                }
+            });
+            return null;
+        }
+    }
+
+    public void SyncBaskets() {
+        new SyncBaskets().execute();
+    }
+
+    private class SyncBaskets extends AsyncTask<Void,Integer,Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            if(mAuth.getCurrentUser().getUid() == null) {
+                return null;
+            }
+            final FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference userTable =  database.getReference("users/" + mAuth.getCurrentUser().getUid());
+
+            // Pull data from cloud
+            userTable.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot basket_names : dataSnapshot.getChildren()) {
+                        String basket_name = basket_names.getKey();
+                        Cursor cursor = getContentResolver().query(MyContentProvider.BASKETS_URI,new String[] {MyContentProvider.BASKET_NAME}, MyContentProvider.BASKET_NAME + "= ?", new String[] {basket_name},null);
+                        if(cursor.getCount()  == 0 ) {
+                            // Update only if there is no such basket in local database
+                            ContentValues basket_name_value = new ContentValues();
+                            basket_name_value.put(MyContentProvider.BASKET_NAME,basket_name);
+                            Uri basket_uri = getContentResolver().insert(MyContentProvider.BASKETS_URI,basket_name_value);
+                            // Get Basket id
+                            String basket_id = basket_uri.getLastPathSegment();
+                            for (DataSnapshot ingredient_name : basket_names.getChildren()) {
+                                // Check if current ingredient name is in db already
+                                Cursor ingredient_query =
+                                        getContentResolver().query(MyContentProvider.INGREDIENTS_URI,
+                                                new String[] {MyContentProvider.INGREDIENT_ID},
+                                                MyContentProvider.INGREDIENTS_NAME + "= ?",new String[] {ingredient_name.getKey()},null);
+                                ContentValues basketIngrediedientValues = new ContentValues();
+                                if(ingredient_query.getCount() == 1 && ingredient_query.moveToNext()) {
+                                    // Add existing ingredient to basket
+                                    basketIngrediedientValues.put(MyContentProvider.INGREDIENT_ID,ingredient_query.getString(0));
+                                    basketIngrediedientValues.put(MyContentProvider.INGREDIENT_AMOUNT, (Long) ingredient_name.getValue());
+
+                                }
+                                else {
+                                    // Add ingredient to local db and add newly created ingredient to basket
+                                    ContentValues ingredient_values = new ContentValues();
+                                    ingredient_values.put(MyContentProvider.INGREDIENTS_NAME,ingredient_name.getKey());
+                                    Uri _uri = getContentResolver().insert(MyContentProvider.INGREDIENTS_URI,ingredient_values);
+                                    String ingredient_id = _uri.getLastPathSegment();
+                                    basketIngrediedientValues.put(MyContentProvider.INGREDIENT_ID,Long.getLong(ingredient_id));
+                                    basketIngrediedientValues.put(MyContentProvider.INGREDIENT_AMOUNT, Integer.getInteger((String)ingredient_name.getValue()));
+
+                                }
+
+                                // Submit ingredient to db
+                                Uri basketIngredientUri = Uri.withAppendedPath(MyContentProvider.BASKETS_URI,basket_id + "/ingredient");
+                                getContentResolver().insert(basketIngredientUri,basketIngrediedientValues);
                             }
-                        });
-                        return null;
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+            // Push local database to cloud
+
+            Cursor basketCursor = getContentResolver().query(MyContentProvider.BASKETS_URI,
+                    new String[] {MyContentProvider.BASKET_NAME,
+                    MyContentProvider.BASKET_ID_WITH_TABLE},
+                    null,null,null);
+            while(basketCursor.moveToNext()) {
+                Cursor ingredientsInBasketCursor = getContentResolver().query(
+                        Uri.withAppendedPath(MyContentProvider.BASKETS_URI,
+                                Long.toString(basketCursor.getLong(1)) + "/ingredient"),
+                        new String[] {
+                                MyContentProvider.INGREDIENTS_NAME,
+                                "COUNT(" + MyContentProvider.INGREDIENT_ID_WITH_TABLE + ")"}
+                        ,null,null,null);
+                // TODO: Hard coded column index because getcolumnindex didn't work with table name.
+                while(ingredientsInBasketCursor.moveToNext()) {
+                    Log.d("Firebase: ", Integer.toString(ingredientsInBasketCursor.getInt(1)));
+                    userTable.child(basketCursor.getString(basketCursor.getColumnIndex(MyContentProvider.BASKET_NAME)))
+                            .child(ingredientsInBasketCursor.getString(ingredientsInBasketCursor.getColumnIndex(MyContentProvider.INGREDIENTS_NAME)))
+                            .setValue(ingredientsInBasketCursor.getInt(1));
+                    userTable.push();
                 }
             }
+            return null;
+        }
+    }
 
-            private void setUpNavigation() {
-                mNavigationView.setNavigationItemSelectedListener(
-                        new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.nav_home:
-                                setFragment(new BasketListingFragment());
-                                CURRENT_NAV_ID = R.id.nav_home;
-                                break;
-                            case R.id.nav_my_account:
-                                setFragment(new MyAccountFragment());
-                        CURRENT_NAV_ID = R.id.nav_my_account;
-                        break;
-                    case R.id.nav_settings:
-                        // TODO add settings fragment
-                        CURRENT_NAV_ID = R.id.nav_settings;
-                        break;
-                    case R.id.nav_about:
-                        // TODO add about fragment
-                        CURRENT_NAV_ID = R.id.nav_about;
-                        break;
-                    default:
-                        setFragment(new BasketListingFragment());
-                        CURRENT_NAV_ID = R.id.nav_home;
-
-                }
-
-                item.setChecked(true);
-                return true;
+    private void setUpNavigation() {
+        mNavigationView.setNavigationItemSelectedListener(
+            new NavigationView.OnNavigationItemSelectedListener() {
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.nav_home:
+                    setFragment(new BasketListingFragment());
+                    CURRENT_NAV_ID = R.id.nav_home;
+                    break;
+                case R.id.nav_my_account:
+                    setFragment(new MyAccountFragment());
+                    CURRENT_NAV_ID = R.id.nav_my_account;
+                    break;
+                case R.id.nav_settings:
+                    // TODO add settings fragment
+                    CURRENT_NAV_ID = R.id.nav_settings;
+                    break;
+                case R.id.nav_about:
+                    // TODO add about fragment
+                    CURRENT_NAV_ID = R.id.nav_about;
+                    break;
+                default:
+                    setFragment(new BasketListingFragment());
+                    CURRENT_NAV_ID = R.id.nav_home;
+    }
+            item.setChecked(true);
+            return true;
             }
         });
-
         ActionBarDrawerToggle actionBarDrawerToggle =
                 new ActionBarDrawerToggle(this,mDrawerLayout,mToolbar,
                         R.string.open_drawer,R.string.close_drawer);

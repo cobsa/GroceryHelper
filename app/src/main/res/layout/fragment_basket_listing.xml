@@ -4,13 +4,16 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycler_view_show_basket"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/basket_listing_swipe_to_refresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="true"
-        android:padding="0dp" />
+        android:layout_height="match_parent">
 
-
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view_show_basket"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="true"
+            android:padding="0dp" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 </android.support.design.widget.CoordinatorLayout>
