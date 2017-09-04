@@ -174,7 +174,7 @@ public class MyContentProvider extends ContentProvider {
 
                 cursor = null;
                 // Get All available basket id from Baskets table
-                Cursor cursorOfBasketIds = db.query(BASKET_TABLE_NAME,new String[]{BASKET_ID},selection,null,null,null,sortOrder);
+                Cursor cursorOfBasketIds = db.query(BASKET_TABLE_NAME,new String[]{BASKET_ID},selection,selectionArgs,null,null,sortOrder);
                 if(cursorOfBasketIds != null) {
                     if(cursorOfBasketIds.getCount() == 0) {
                         // If no baskets are created just return empty cursor
